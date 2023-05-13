@@ -10,7 +10,7 @@ public class PetDatabase {
 
     public static void main(String[] args) {
 
-        System.out.println("Pet Database Program\n");
+        System.out.println("Pet Database Program");
 
         boolean runLoop = true;
         int choice;
@@ -21,21 +21,25 @@ public class PetDatabase {
 
         while (runLoop) {
 
-            System.out.println("What would you like to do?");
+            System.out.println("\nWhat would you like to do?");
             System.out.println("1) View all pets");
             System.out.println("2) Add more pets");
             System.out.println("3) Search pets by name");
             System.out.println("4) Search pets by age");
-            System.out.println("5) Exit program");
+            System.out.println("5) Update an existing pet");
+            System.out.println("6) Remove an existing pet");
+            System.out.println("7) Exit program");
+            printBlankLine();
             System.out.print("Your choice: ");
             choice = sc.nextInt(); sc.nextLine();
-            System.out.println();
+            printBlankLine();
 
             switch (choice) {
 
                 case 1:
                     displayPets(pets);
                     break;
+
                 case 2:
                     while (true) {
 
@@ -53,16 +57,50 @@ public class PetDatabase {
 
                     }
                     break;
+
                 case 3:
                     System.out.print("Enter a name to search: ");
                     String name = sc.nextLine();
+
                     displayPetsByName(pets, name);
                     break;
+
                 case 4:
                     System.out.print("Enter an age to search: ");
                     int age = sc.nextInt(); sc.nextLine();
+
                     displayPetsByAge(pets, age);
                     break;
+
+                case 5:
+                    displayPets(pets);
+                    printBlankLine();
+
+                    System.out.print("Enter the ID of the pet you want to update: ");
+                    int idToUpdate = sc.nextInt(); sc.nextLine();
+                    String oldPetInfo = pets.get(idToUpdate)[0] + " " + pets.get(idToUpdate)[1];
+
+                    System.out.print("Enter the new name and age: ");
+                    String newPetInfo = sc.nextLine();
+
+                    pets.set(idToUpdate, newPetInfo.split(" "));
+
+                    System.out.printf("%s has been changed to %s.\n", oldPetInfo, newPetInfo);
+                    break;
+
+                case 6:
+                    displayPets(pets);
+                    printBlankLine();
+
+                    System.out.print("Enter the ID of the pet you want to remove: ");
+                    int idToRemove = sc.nextInt(); sc.nextLine();
+                    String removedPetInfo = pets.get(idToRemove)[0] + " " + pets.get(idToRemove)[1];
+
+                    pets.remove(idToRemove);
+
+                    System.out.printf("%s has been removed.\n", removedPetInfo);
+                    break;
+
                 default:
                     runLoop = false;
 
@@ -70,6 +108,10 @@ public class PetDatabase {
 
         }
 
+    }
+
+    private static void printBlankLine() {
+        System.out.println();
     }
 
     private static void displayPets(ArrayList<String[]> pets) {
@@ -88,13 +130,16 @@ public class PetDatabase {
         displayHeader();
 
         boolean validName;
+        int petsDisplayed = 0;
         for (int i = 0; i < pets.size(); i++) {
             validName = pets.get(i)[0].equalsIgnoreCase(name) || name.equals(ALL);
-            if (validName)
+            if (validName) {
                 displayRow(pets, i);
+                petsDisplayed++;
+            }
         }
 
-        displayFooter(pets.size());
+        displayFooter(petsDisplayed);
 
     }
 
@@ -103,13 +148,16 @@ public class PetDatabase {
         displayHeader();
 
         boolean validAge;
+        int petsDisplayed = 0;
         for (int i = 0; i < pets.size(); i++) {
             validAge = pets.get(i)[1].equals(String.valueOf(age));
-            if (validAge)
+            if (validAge) {
                 displayRow(pets, i);
+                petsDisplayed++;
+            }
         }
 
-        displayFooter(pets.size());
+        displayFooter(petsDisplayed);
 
     }
 
