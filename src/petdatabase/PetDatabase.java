@@ -2,7 +2,6 @@ package petdatabase;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Objects;
 import java.util.Scanner;
 
 public class PetDatabase {
@@ -26,9 +25,8 @@ public class PetDatabase {
                 FileInputStream file = new FileInputStream(filename);
                 ObjectInputStream input = new ObjectInputStream(file)
         ) {
-
+            //noinspection unchecked
             pets = (ArrayList<Pet>) input.readObject();
-
         } catch (IOException | ClassNotFoundException e) {
             System.out.println("Error reading file; has " + filename + " been created yet?");
             System.out.println(e.getMessage());
@@ -60,15 +58,26 @@ public class PetDatabase {
 
                         System.out.print("Add pet (name, age): ");
                         String data = sc.nextLine();
-                        if (Objects.equals(data, "done")) {
+
+                        if (data.equals("done")) {
                             System.out.printf("%d pet(s) added.\n", numPetsAdded);
                             numPetsAdded = 0;
                             break;
-                        }
-                        else {
+                        } else if (pets.size() >= 5) {
+                            System.out.println("Error: Database is full.");
+                            break;
+                        } else {
+
                             String[] pet = data.split(" ");
-                            pets.add(new Pet(pet[0], Integer.parseInt(pet[1])));
-                            numPetsAdded++;
+                            String name = pet[0];
+                            int age;
+
+                            if (checkInfo(pet)) {
+                                age = Integer.parseInt(pet[1]);
+                                pets.add(new Pet(name, age));
+                                numPetsAdded++;
+                            }
+
                         }
 
                     }
@@ -94,16 +103,33 @@ public class PetDatabase {
 
                     System.out.print("Enter the ID of the pet you want to update: ");
                     int idToUpdate = sc.nextInt(); sc.nextLine();
-                    String oldPetInfo = pets.get(idToUpdate).getName() + " " + pets.get(idToUpdate).getAge();
 
-                    System.out.print("Enter the new name and age: ");
-                    String newPetInfo = sc.nextLine();
-                    String[] newPet = newPetInfo.split(" ");
+                    String oldPetInfo;
 
-                    pets.get(idToUpdate).setName(newPet[0]);
-                    pets.get(idToUpdate).setAge(Integer.parseInt(newPet[1]));
+                    try {
+                        oldPetInfo = pets.get(idToUpdate).getName() + " " + pets.get(idToUpdate).getAge();
+                    } catch (IndexOutOfBoundsException e) {
+                        System.out.printf("Error: Pet ID %d does not exist.\n", idToUpdate);
+                        break;
+                    }
 
-                    System.out.printf("%s has been changed to %s.\n", oldPetInfo, newPetInfo);
+                    while (true) {
+
+                        System.out.print("Enter the new name and age: ");
+                        String newPetInfo = sc.nextLine();
+                        String[] newPet = newPetInfo.split(" ");
+
+                        if (checkInfo(newPet)) {
+
+                            pets.get(idToUpdate).setName(newPet[0]);
+                            pets.get(idToUpdate).setAge(Integer.parseInt(newPet[1]));
+
+                            System.out.printf("%s has been changed to %s.\n", oldPetInfo, newPetInfo);
+                            break;
+
+                        }
+
+                    }
                     break;
 
                 case 6:
@@ -112,7 +138,15 @@ public class PetDatabase {
 
                     System.out.print("Enter the ID of the pet you want to remove: ");
                     int idToRemove = sc.nextInt(); sc.nextLine();
-                    String removedPetInfo = pets.get(idToRemove).getName() + " " + pets.get(idToRemove).getAge();
+
+                    String removedPetInfo;
+
+                    try {
+                        removedPetInfo = pets.get(idToRemove).getName() + " " + pets.get(idToRemove).getAge();
+                    } catch (IndexOutOfBoundsException e) {
+                        System.out.printf("Error: Pet ID %d does not exist.\n", idToRemove);
+                        break;
+                    }
 
                     pets.remove(idToRemove);
 
@@ -130,9 +164,7 @@ public class PetDatabase {
                 FileOutputStream file = new FileOutputStream(filename);
                 ObjectOutputStream output = new ObjectOutputStream(file)
         ) {
-
             output.writeObject(pets);
-
         } catch (IOException e) {
             System.out.println("Error: database not saved");
             e.printStackTrace();
@@ -204,6 +236,32 @@ public class PetDatabase {
     private static void displayFooter(int rowsInSet) {
         System.out.println("+----------------------+");
         System.out.printf("%d rows in set.\n", rowsInSet);
+    }
+
+    private static boolean checkInfo(String[] petInfo) {
+
+        String data = String.join(" ", petInfo);
+        int age;
+
+        if (petInfo.length != 2) {
+            System.out.printf("Could not parse input %s. Make sure to format the input as <name age>.\n", data);
+            return false;
+        }
+
+        try {
+            age = Integer.parseInt(petInfo[1]);
+        } catch (NumberFormatException e) {
+            System.out.printf("Could not parse input %s. Make sure the age is a whole number.\n", data);
+            return false;
+        }
+
+        if (age < 1 || age > 20) {
+            System.out.printf("Could not parse input %s. Make sure the age is between 1 and 20.\n", data);
+            return false;
+        }
+
+        return true;
+
     }
 
 }
